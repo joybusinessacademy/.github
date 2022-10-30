@@ -1,0 +1,114 @@
+name: Azure Functions Action
+
+on:
+  workflow_call:
+    inputs:
+      resourceGroup:
+        type: string
+        description: The resource group the app belongs to
+        required: true
+      appName:
+        type: string
+        description: The name of the app
+        required: true
+      slotName:
+        type: string
+        description: App slot to deploy to ['Production', 'Staging'], defaults to Production
+        required: false
+      projectPath:
+        type: string
+        description: The path to the project to build, defaults to repository root '.'
+        default: '.'
+        required: true
+      testProjectPath:
+        type: string
+        description: The path to the the test project, e.g. `./ProjectNameTest`
+        required: false
+      dotnetVersion:
+        type: string
+        description: The dotnet version to use ['3.1.x', '6.0.x'], defaults to 3.1.x
+        default: 3.1.x
+      buildConfiguration:
+        type: string
+        description: The dotnet build configuration to use ['Debug', 'Release'], defaults to 'Release'
+        default: Release
+    secrets:
+      AZURE_CREDENTIALS:
+        required: true
+      NUGET_SOURCE_URL:
+        required: true
+      AZURE_DEVOPS_PAT:
+        required: true
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+
+jobs:
+  build_test_deploy:
+    name: Build, Test & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get publish profile
+        id: publishprofile
+        uses: aliencube/publish-profile-actions@v1
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        with:
+          resourceGroupName: ${{ inputs.resourceGroup }}
+          appName: ${{ inputs.appName }}
+
+      - name: Setup
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ inputs.dotnetVersion }}
+          source-url: ${{ secrets.NUGET_SOURCE_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_PAT }}
+
+      - name: Cache dependencies
+        id: cache-nuget
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.projectPath }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys:
+            ${{ runner.os }}-nuget
+
+      - name: Restore
+        if: ${{ steps.cache-nuget.outputs.cache-hit  !+ 'true' }}
+        shell: bash
+        run: |
+          dotnet restore ${{ inputs.projectPath }} --locked-mode
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build './${{ inputs.projectPath }}' --configuration ${{ inputs.buildConfiguration }} --no-restore --output ./output
+
+      - name: Test
+        shell: bash
+        if: inputs.testProjectPath != 0
+        run: |
+          dotnet test ${{ inputs.testProjectPath }} --no-restore
+
+      - name: Deploy
+        uses: azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ inputs.appName }}
+          package: ${{ inputs.projectPath }}/output
+          publish-profile: ${{ steps.publishprofile.outputs.profile }}
+          slot-name: ${{ inputs.slotName }}
+
+      - name: Reset publish profile
+        uses: aliencube/publish-profile-actions@v1
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        with:
+          resourceGroupName: ${{ inputs.resourceGroup }}
+          appName: ${{ inputs.appName }}
+          reset: true
