@@ -3,5 +3,5 @@
   "description": "SkillsVR FunctionApp CI starter workflow",
   "iconName": "",
   "categories": ["Azure", "FunctionApp"],
-  "filePatters": ["**/host.json"]
+  "filePatterns": [".*\\.csproj", ".*\\.sln"]
 }
