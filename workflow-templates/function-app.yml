@@ -15,25 +15,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  DOTNET_VERSION: 6.0.x
-  APP_NAME: <APP_NAME>
-  PROJECT_PATH: <PROJECT_PATH>
-
 jobs:
   build:
     name: Build
     uses: joybusinessacademy/.github/.github/workflows/dotnet-build.yml@main
     with:
-      project-path: $PROJECT_PATH
-      dotnet-version: $DOTNET_VERSION
+      project-path: <project-path>
     secrets: inherit
 
   test:
     name: Test
     uses: joybusinessacademy/.github/.github/workflows/dotnet-test.yml@main
-    with:
-      dotnet-version: $DOTNET_VERSION
     secrets: inherit
 
   deploy_develop:
@@ -48,9 +40,8 @@ jobs:
     with:
       environment: Development
       resource-group: ${{ matrix.resource-group }}
-      app-name: $APP_NAME
-      project-path: $PROJECT_PATH
-      dotnet-version: $DOTNET_VERSION
+      app-name: <app-name>
+      project-path: <project-path>
     secrets: inherit
 
   deploy_test:
@@ -65,9 +56,8 @@ jobs:
     with:
       environment: Test
       resource-group: ${{ matrix.resource-group }}
-      app-name: $APP_NAME
-      project-path: $PROJECT_PATH
-      dotnet-version: $DOTNET_VERSION
+      app-name: <app-name>
+      project-path: <project-path>
     secrets: inherit
 
   deploy_prod:
@@ -82,7 +72,6 @@ jobs:
     with:
       environment: Production
       resource-group: ${{ matrix.resource-group }}
-      app-name: $APP_NAME
-      project-path: $PROJECT_PATH
-      dotnet-version: $DOTNET_VERSION
+      app-name: <app-name>
+      project-path: <project-path>
     secrets: inherit

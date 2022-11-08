@@ -20,11 +20,6 @@ on:
         type: string
         description: The app name
         required: true
-      slot-name:
-        type: string
-        description: The name of the slot
-        default: slot
-        required: false
       project-path:
         type: string
         description: The path to the project to build
@@ -76,7 +71,7 @@ jobs:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         with:
           resourceGroupName: ${{ inputs.resource-group }}
-          appName: ${{ inputs.app-name }}/${{ inputs.slot-name }}
+          appName: ${{ inputs.app-name }}
 
       - name: Deploy
         if: steps.publishprofile.outputs.profile != 0
@@ -94,5 +89,5 @@ jobs:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         with:
           resourceGroupName: ${{ inputs.resource-group }}
-          appName: ${{ inputs.app-name }}/${{ inputs.slot-name }}
+          appName: ${{ inputs.app-name }}
           reset: true
