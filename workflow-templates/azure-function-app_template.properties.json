@@ -2,6 +2,6 @@
   "name": "SkillsVR App Starter Workflow",
   "description": "SkillsVR App Starter Workflow",
   "iconName": "azure-function-app",
-  "categories": ["Azure", "FunctionApp"],
+  "categories": ["C#"],
   "filePatterns": ["nuget.config", ".*\\.sln$", ".*\\.csproj$"]
 }
