@@ -1,0 +1,100 @@
+name: release
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        type: string
+        description: The project path, defaults to repository root `.`
+        default: '.'
+        required: false
+      dotnet-version:
+        type: string
+        description: The dotnet version to use
+        required: true
+      source-url:
+        type: string
+        description: The nuget source url, defaults to `https://pkgs.dev.azure.com/PrideAndJoy/_packaging/JBA_Shared_Packages/nuget/v3/index.jso`
+        default: https://pkgs.dev.azure.com/PrideAndJoy/_packaging/JBA_Shared_Packages/nuget/v3/index.json
+        required: false
+      nuget-source-name:
+        type: string
+        description: The name of the nuget source in the nuget.config file
+        default: JBA_Shared_Packages
+        required: false
+    secrets:
+      NUGET_AUTH_TOKEN:
+        required: true
+
+jobs:
+  release:
+    name: Release package
+    runs-on: ubuntu-22.04
+
+    env:
+      VERSION: ${{ github.event.release.tag_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.version }}
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          source-url: ${{ inputs.source-url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Project Version
+        working-directory: ${{ inputs.project-path }}
+        shell: pwsh
+        run: |
+          Clear-Host
+
+          Write-Host "Updating project version"
+
+          $projPath = Get-Item -Path ${{ inputs.project-path }} -Filter *.csproj
+          $filePath = $projPath.FullName
+
+          [ValidateNotNull]
+          [ValidatePattern("^v?[1-9]+\.\d+\.\d+(\.\d+)?$")]
+          $version = $Env:VERSION
+
+          if ($version.Substring(0,1) -eq "v") {
+            $version = $version.Substring(1)
+          }
+
+          $xml = New-Object XML
+          $xml.Load($filePath)
+
+          $versionNode = $xml.Project.PropertyGroup.Version
+          if ($null -eq $versionNode) {
+            $versionNode = $xml.CreateElement("Version")
+            $xml.Project.PropertyGroup.AppendChild($versionNode)
+          }
+
+          $xml.Project.PropertyGroup.Version = $version
+          $xml.Save($filePath)
+
+          Write-Host "Updated project " + $filePath + " version to " + $version
+
+      - name: Build
+        shell: bash
+        working-directory: ${{ inputs.project-path }}
+        run: |
+          dotnet build -c Release
+
+      - name: Pack
+        shell: bash
+        working-directory: ${{ inputs.project-path }}
+        run: |
+          dotnet pack -c Release /p:Version=$PACKAGE_VERSION
+
+      - name: Publish
+        shell: bash"
+        working-directory: ${{ inputs.project-path }}
+        run: |
+          dotnet nuget push bin/Release/*.nupkg --source ${{ inputs.nuget-source-name }}
