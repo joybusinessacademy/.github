@@ -23,7 +23,7 @@ env:
 jobs:
   build:
     name: Build
-    uses: joybusinessacademy/.github/.github/workflows/dotnet/build.yml@main
+    uses: joybusinessacademy/.github/.github/workflows/dotnet-build.yml@main
     with:
       project-path: ${{ env.project-path }}
       dotnet-version: ${{ env.dotnet-version }}
@@ -31,7 +31,7 @@ jobs:
 
   test:
     name: Test
-    uses: joybusinessacademy/.github/.github/workflows/dotnet/test.yml@main
+    uses: joybusinessacademy/.github/.github/workflows/dotnet-test.yml@main
     with:
       dotnet-version: ${{ env.dotnet-version }}
     secrets: inherit
@@ -44,7 +44,7 @@ jobs:
       fail-fast: true
       matrix:
         resource-group: [rg-online-regional-ent-dev-ae, rg-online-regional-ent-dev-eus]
-    uses: joybusinessacademy/.github/.github/workflows/dotnet/deploy.yml@main
+    uses: joybusinessacademy/.github/.github/workflows/dotnet-deploy.yml@main
     with:
       environment: Development
       resource-group: ${{ matrix.resource-group }}
@@ -61,7 +61,7 @@ jobs:
       fail-fast: true
       matrix:
         resource-group: [rg-online-regional-ent-test-ae, rg-online-regional-ent-test-eus]
-    uses: joybusinessacademy/.github/.github/workflows/dotnet/deploy.yml@main
+    uses: joybusinessacademy/.github/.github/workflows/dotnet-deploy.yml@main
     with:
       environment: Test
       resource-group: ${{ matrix.resource-group }}
@@ -78,7 +78,7 @@ jobs:
       fail-fast: true
       matrix:
         resource-group: [rg-online-regional-ent-prod-ae, rg-online-regional-ent-prod-as, rg-online-regional-ent-prod-eus, rg-online-regional-ent-prod-wus]
-    uses: joybusinessacademy/.github/.github/workflows/dotnet/deploy.yml@main
+    uses: joybusinessacademy/.github/.github/workflows/dotnet-deploy.yml@main
     with:
       environment: Production
       resource-group: ${{ matrix.resource-group }}
