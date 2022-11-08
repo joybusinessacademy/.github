@@ -59,7 +59,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          dotnet build -c Release --no-restore --output ./output
+          dotnet build -c Release ${{ inputs.project-path }} --no-restore --output ./output
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
