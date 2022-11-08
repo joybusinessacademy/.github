@@ -1,6 +1,6 @@
 {
   "name": "SkillsVR App Starter Workflow",
   "description": "SkillsVR App Starter Workflow",
-  "iconName": "azure-function-app",
+  "iconName": "function-app",
   "categories": ["C#"]
 }

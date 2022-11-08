@@ -3,6 +3,11 @@ name: release
 on:
   workflow_call:
     inputs:
+      runs-on:
+        type: string
+        description: The target OS, defaults to ubuntu-22.04
+        default: ubuntu-22.04
+        required: false
       project-path:
         type: string
         description: The project path, defaults to repository root `.`
@@ -10,41 +15,38 @@ on:
         required: false
       dotnet-version:
         type: string
-        description: The dotnet version to use
-        required: true
-      source-url:
-        type: string
-        description: The nuget source url, defaults to `https://pkgs.dev.azure.com/PrideAndJoy/_packaging/JBA_Shared_Packages/nuget/v3/index.jso`
-        default: https://pkgs.dev.azure.com/PrideAndJoy/_packaging/JBA_Shared_Packages/nuget/v3/index.json
-        required: false
-      nuget-source-name:
-        type: string
-        description: The name of the nuget source in the nuget.config file
-        default: JBA_Shared_Packages
+        description: The dotnet version to use ['3.1.x', '6.0.x'], defaults to 6.0.x
+        default: 6.0.x
         required: false
     secrets:
+      NUGET_SOURCE_URL:
+        required: true
       NUGET_AUTH_TOKEN:
         required: true
 
 jobs:
   release:
     name: Release package
-    runs-on: ubuntu-22.04
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      packages: write
+      contents: read
 
     env:
       VERSION: ${{ github.event.release.tag_name }}
+      NUGET_SOURCE_NAME: JBA_Shared_Packages
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.version }}
+          ref: ${{ env.VERSION }}
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
-          source-url: ${{ inputs.source-url }}
+          source-url: ${{ secrets.NUGET_SOURCE_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -91,10 +93,10 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.project-path }}
         run: |
-          dotnet pack -c Release /p:Version=$PACKAGE_VERSION
+          dotnet pack -c Release
 
       - name: Publish
         shell: bash"
         working-directory: ${{ inputs.project-path }}
         run: |
-          dotnet nuget push bin/Release/*.nupkg --source ${{ inputs.nuget-source-name }}
+          dotnet nuget push bin/Release/*.nupkg --source ${{ env.NUGET_SOURCE_NAME }}
