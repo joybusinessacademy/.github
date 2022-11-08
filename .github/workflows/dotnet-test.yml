@@ -54,7 +54,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          dotnet test --no-restore --verbosity normal --logger trx --results-directory "TestResults-${{ inputs.dotnet-version }}"
+          dotnet test --verbosity normal --logger trx --results-directory "TestResults-${{ inputs.dotnet-version }}"
 
       - name: Upload dotnet test results
         uses: actions/upload-artifact@v3
