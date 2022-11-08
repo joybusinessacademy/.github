@@ -1,6 +1,0 @@
-{
-  "name": "SkillsVR FunctionApp Workflow",
-  "description": "SkillsVR FunctionApp CI starter workflow",
-  "iconName": "azure-function-app",
-  "categories": ["Azure", "FunctionApp"]
-}
