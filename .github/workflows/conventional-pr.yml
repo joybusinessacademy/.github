@@ -1,0 +1,29 @@
+name: Conventional PR title
+
+on:
+  workflow_call:
+    secrets:
+      github-token:
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR title
+        uses: namchee/conventional-pr@v0.15.4
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+          body: false
+          issue: false
