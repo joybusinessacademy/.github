@@ -2,9 +2,6 @@ name: Conventional PR title
 
 on:
   workflow_call:
-    secrets:
-      github-token:
-        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
