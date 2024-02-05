@@ -1,0 +1,59 @@
+name: Create New Version
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: The name of the release e.g. v1.1.1
+        value: ${{ jobs.create-version.outputs.version }}
+    inputs:
+      test:
+        type: boolean
+        description: Whether this is a test run
+        default: false
+
+jobs:
+  create-version:
+    name: Create Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: "v${{ steps.cz.outputs.version }}"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.COMMITIZEN_TOKEN }}
+
+      - name: Create bump and changelog
+        id: cz
+        uses: commitizen-tools/commitizen-action@0.18.2
+        with:
+          github_token: ${{ secrets.COMMITIZEN_TOKEN }}
+          changelog_increment_filename: body.md
+          gpg_sign: false
+          debug: ${{ runner.debug == '1' }}
+          dry_run: ${{ inputs.test }}
+
+      - name: Update Npm Version
+        if: steps.cz.outputs.version != '' && inputs.test != true
+        run: |
+          npm version ${{ steps.cz.outputs.version }} --no-git-tag-version
+
+      - name: Create GH Release
+        if: steps.cz.outputs.version != '' && inputs.test != true
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: "body.md"
+          tag_name: "v${{ steps.cz.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.COMMITIZEN_TOKEN }}
+
+      - name: Notify Slack
+        uses: donovan-fournier/action-post-md-slack@v0.0.1
+        if: steps.cz.outputs.version != '' && inputs.test != true
+        with:
+          input-md: body.md
+          slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          slack-channel: ${{ vars.SLACK_CHANNEL_TEAM_DEVOPS }}
