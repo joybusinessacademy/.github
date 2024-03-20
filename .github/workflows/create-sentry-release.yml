@@ -24,6 +24,11 @@ on:
         type: string
         description: Sourcemaps directory if any. (Optional)
         required: false
+      ignore-missing:
+        type: boolean
+        description: When the flag is set and the previous release commit was not found in the repository, will create a release with the default commits count instead of failing the command.
+        required: false
+        default: false
     secrets:
       token:
         required: true
@@ -53,4 +58,5 @@ jobs:
         with:
           environment: ${{ inputs.environment }}
           sourcemaps: ${{ inputs.sourcemaps }}
+          ignore_missing: ${{ inputs.ignore-missing }}
           version: ${{ inputs.sentry-project}}-${{ inputs.version }}
