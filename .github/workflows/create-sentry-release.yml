@@ -20,6 +20,10 @@ on:
         type: string
         description: The Sentry project slug
         required: true
+      sourcemaps:
+        type: string
+        description: Sourcemaps directory if any. (Optional)
+        required: false
     secrets:
       token:
         required: true
@@ -48,4 +52,5 @@ jobs:
           SENTRY_PROJECT: ${{ inputs.sentry-project }}
         with:
           environment: ${{ inputs.environment }}
+          sourcemaps: ${{ inputs.sourcemaps }}
           version: ${{ inputs.sentry-project}}-${{ inputs.version }}
