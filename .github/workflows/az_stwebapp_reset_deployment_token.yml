@@ -3,9 +3,17 @@ name: Azure Static Webapp Reset Deployment Token
 on:
   workflow_call:
     inputs:
-      env:
+      az-client-id:
         type: string
-        description: The environment name to load
+        description: The Azure client Id
+        required: true
+      az-tenant-id:
+        type: string
+        default: The Azure tenant Id
+        required: true
+      az-subscription-id:
+        type: string
+        default: The Azure subscription Id
         required: true
       name:
         type: string
@@ -24,15 +32,14 @@ jobs:
   reset-token:
     name: Reset deployment token
     runs-on: ubuntu-latest
-    environment: ${{ inputs.env }}
 
     steps:
       - name: Azure Login OIDC
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ inputs.az-client-id }}
+          tenant-id: ${{ inputs.az-tenant-id }}
+          subscription-id: ${{ inputs.az-subscription-id }}
 
       - name: Azure account
         uses: azure/CLI@v2
