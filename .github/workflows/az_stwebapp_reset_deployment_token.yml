@@ -3,6 +3,10 @@ name: Azure Static Webapp Reset Deployment Token
 on:
   workflow_call:
     inputs:
+      env:
+        type: string
+        description: The environment name to load
+        required: true
       name:
         type: string
         description: The name of the static webapp
@@ -20,6 +24,7 @@ jobs:
   reset-token:
     name: Reset deployment token
     runs-on: ubuntu-latest
+    environment: ${{ inputs.env }}
 
     steps:
       - name: Azure Login OIDC
