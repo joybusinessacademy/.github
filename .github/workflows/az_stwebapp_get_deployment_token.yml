@@ -7,10 +7,6 @@ on:
         type: string
         description: The environment to load
         required: true
-      name:
-        type: string
-        description: The name of the static webapp
-        required: true
       azcliversion:
         type: string
         description: Optional. The az cli version to use
@@ -53,6 +49,6 @@ jobs:
         with:
           azcliversion: ${{ inputs.azcliversion }}
           inlineScript: |
-            TOKEN=$(az staticwebapp secrets list -n '${{ inputs.name }}' | jq -r '.properties.apiKey')
+            TOKEN=$(az staticwebapp secrets list -n '${{ vars.STATIC_WEBAPP_NAME }}' | jq -r '.properties.apiKey')
             echo "::add-mask::$TOKEN"
             echo "token=$TOKEN" >> $GITHUB_OUTPUT

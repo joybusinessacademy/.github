@@ -7,10 +7,6 @@ on:
         type: string
         description: The environment to load
         required: true
-      name:
-        type: string
-        description: The name of the static webapp
-        required: true
       azcliversion:
         type: string
         description: Optional. The az cli version to use
@@ -46,4 +42,4 @@ jobs:
         with:
           azcliversion: ${{ inputs.azcliversion }}
           inlineScript: |
-            az staticwebapp secrets reset-api-key -n '${{ inputs.name }}'
+            az staticwebapp secrets reset-api-key -n '${{ vars.STATIC_WEBAPP_NAME }}'
