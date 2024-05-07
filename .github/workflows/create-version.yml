@@ -50,10 +50,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.COMMITIZEN_TOKEN }}
 
-      - name: Notify Slack
-        uses: donovan-fournier/action-post-md-slack@v0.0.1
-        if: steps.cz.outputs.version != '' && inputs.test != true
-        with:
-          input-md: body.md
-          slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          slack-channel: ${{ vars.SLACK_CHANNEL_TEAM_DEVOPS }}
+      # - name: Notify Slack
+      #   uses: donovan-fournier/action-post-md-slack@v0.0.1
+      #   if: steps.cz.outputs.version != '' && inputs.test != true
+      #   with:
+      #     input-md: body.md
+      #     slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
+      #     slack-channel: ${{ vars.SLACK_CHANNEL_TEAM_DEVOPS }}
