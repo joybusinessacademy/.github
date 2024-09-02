@@ -1,4 +1,4 @@
-name: Create New Version
+name: Create Version
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ jobs:
     name: Create Version
     runs-on: ubuntu-latest
     outputs:
-      version: "v${{ steps.cz.outputs.version }}"
+      version: "v${{ env.REVISION }}"
 
     steps:
       - name: Checkout
@@ -29,7 +29,6 @@ jobs:
           fetch-depth: 0
 
       - name: Calculate version
-        id: cz
         uses: commitizen-tools/commitizen-action@0.21.0
         with:
           github_token: ${{ secrets.COMMITIZEN_TOKEN }}
@@ -37,10 +36,10 @@ jobs:
           dry_run: true
 
       - name: Update Npm Version
-        if: steps.cz.outputs.version != '' && inputs.test != true
+        if: env.REVISION != '' && inputs.test != true
         run: |
           if [ -f "package.json" ] && [ -w "package.json" ]; then
-            npm version ${{ steps.cz.outputs.version }} --no-git-tag-version
+            npm version ${{ env.REVISION }} --no-git-tag-version
           fi
 
       - name: Create bump and changelog
@@ -51,10 +50,10 @@ jobs:
           dry_run: ${{ inputs.test }}
 
       - name: Create GH Release
-        if: steps.cz.outputs.version != '' && inputs.test != true
+        if: env.REVISION != '' && inputs.test != true
         uses: softprops/action-gh-release@v1
         with:
           body_path: "body.md"
-          tag_name: "v${{ steps.cz.outputs.version }}"
+          tag_name: "v${{ env.REVISION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.COMMITIZEN_TOKEN }}
