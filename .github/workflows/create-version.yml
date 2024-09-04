@@ -11,6 +11,11 @@ on:
         type: boolean
         description: Whether this is a test run
         default: false
+      prerelease:
+        type: boolean
+        description: Prerelease?
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -44,9 +49,20 @@ jobs:
 
       - name: Create bump and changelog
         uses: commitizen-tools/commitizen-action@0.21.0
+        if: inputs.prerelease == false
         with:
           github_token: ${{ secrets.COMMITIZEN_TOKEN }}
           changelog_increment_filename: body.md
+          dry_run: ${{ inputs.test }}
+
+      - name: Create prerelease
+        uses: commitizen-tools/commitizen-action@0.21.0
+        if: inputs.prerelease
+        with:
+          github_token: ${{ secrets.COMMITIZEN_TOKEN }}
+          changelog_increment_filename: body.md
+          changelog: false
+          prerelease: "rc"
           dry_run: ${{ inputs.test }}
 
       - name: Create GH Release
@@ -55,5 +71,6 @@ jobs:
         with:
           body_path: "body.md"
           tag_name: "v${{ env.REVISION }}"
+          prerelease: ${{ inputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.COMMITIZEN_TOKEN }}
