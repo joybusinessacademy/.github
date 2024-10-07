@@ -16,6 +16,10 @@ on:
         description: Prerelease?
         required: false
         default: false
+      increment:
+        type: string
+        description: Manually specify the desired increment {MAJOR,MINOR, PATCH}
+        required: false
 
 permissions:
   contents: write
@@ -47,7 +51,16 @@ jobs:
             npm version ${{ env.REVISION }} --no-git-tag-version
           fi
 
-      - name: Create bump and changelog
+      - name: Create bump and changelog (with increment)
+        uses: commitizen-tools/commitizen-action@0.21.0
+        if: inputs.prerelease == false && contains(fromJson('["MAJOR", "MINOR", "PATCH"]'), inputs.increment)
+        with:
+          github_token: ${{ secrets.COMMITIZEN_TOKEN }}
+          changelog_increment_filename: body.md
+          increment: ${{ inputs.increment }}
+          dry_run: ${{ inputs.test }}
+
+      - name: Create bump and changelog (without increment)
         uses: commitizen-tools/commitizen-action@0.21.0
         if: inputs.prerelease == false
         with:
