@@ -39,13 +39,14 @@ jobs:
 
       - name: Calculate version
         uses: commitizen-tools/commitizen-action@0.21.0
+        id: calculate-version
         with:
           github_token: ${{ secrets.COMMITIZEN_TOKEN }}
           changelog_increment_filename: body.md
           dry_run: true
 
       - name: Update Npm Version
-        if: env.REVISION != '' && inputs.test != true
+        if: steps.calculate-version.outputs.version && inputs.test != true
         run: |
           if [ -f "package.json" ] && [ -w "package.json" ]; then
             npm version ${{ env.REVISION }} --no-git-tag-version
