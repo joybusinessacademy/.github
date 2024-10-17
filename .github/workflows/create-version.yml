@@ -45,13 +45,9 @@ jobs:
           changelog_increment_filename: body.md
           dry_run: true
 
-      - name: Update Npm Version
-        if: steps.calculate-version.outputs.version && inputs.test != true
+      - name: Show next version
         run: |
-          echo ${{ steps.calculate-version.outputs.version }}
-          if [ -f "package.json" ] && [ -w "package.json" ]; then
-            npm version ${{ steps.calculate-version.outputs.version }} --no-git-tag-version
-          fi
+          echo "${{ steps.calculate-version.outputs.version }}"
 
       - name: Create bump and changelog (with increment)
         uses: commitizen-tools/commitizen-action@0.21.0
