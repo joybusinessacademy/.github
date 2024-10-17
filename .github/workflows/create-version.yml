@@ -48,8 +48,9 @@ jobs:
       - name: Update Npm Version
         if: steps.calculate-version.outputs.version && inputs.test != true
         run: |
+          echo ${{ steps.calculate-version.outputs.version }}
           if [ -f "package.json" ] && [ -w "package.json" ]; then
-            npm version ${{ env.REVISION }} --no-git-tag-version
+            npm version ${{ steps.calculate-version.outputs.version }} --no-git-tag-version
           fi
 
       - name: Create bump and changelog (with increment)
