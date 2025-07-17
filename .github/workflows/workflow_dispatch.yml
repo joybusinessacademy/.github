@@ -1,0 +1,78 @@
+name: Dispatch another repo workflow
+
+on:
+  workflow_call:
+    inputs:
+      repo_name:
+        type: string
+        description: Name of the repository
+        required: true
+      repository_owner:
+        type: string
+        description: Owner of the repository
+        required: false
+        default: ${{ github.repository_owner }}
+      ref_name:
+        type: string
+        description: Name of the branch or tag [refs/heads/main, main, refs/tags/v1.0.0, v1.0.0]
+        required: false
+      workflow:
+        type: string
+        description: Workflow name or ID
+        required: true
+      workflow_inputs:
+        type: string
+        description: Workflow inputs in JSON string
+        required: false
+      run_timeout_seconds:
+        type: number
+        description: Timeout in seconds. Defaults to 1 hour
+        required: false
+        default: 3600
+      poll_interval_ms:
+        type: number
+        description: Poll interval in milliseconds
+        required: false
+        default: 5000
+
+permissions:
+  actions: read
+
+jobs:
+  workflow_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - id: fetch-latest-release
+        if: ${{ inputs.ref_name == '' }}
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
+        with:
+          owner: ${{ inputs.repository_owner }}
+          repo: ${{ inputs.repo_name }}
+          excludes: prerelease, draft
+          token: ${{ secrets.IAC_TOKEN }}
+
+      - name: dispatch workflow
+        uses: lasith-kg/dispatch-workflow@v2
+        id: workflow-dispatch
+        with:
+          starting-delay-ms: 500
+          max-attempts: 10
+          time-multiple: 10
+          dispatch-method: workflow_dispatch
+          repo: ${{ inputs.repo_name }}
+          owner: ${{ inputs.repository_owner }}
+          ref: ${{ inputs.ref_name || steps.fetch-latest-release.outputs.release }}
+          workflow: ${{ inputs.workflow }}
+          token: ${{ secrets.IAC_TOKEN }}
+          discover: true
+          workflow-inputs: ${{ inputs.workflow_inputs }}
+
+      - name: Await Run ID ${{ steps.workflow-dispatch.outputs.run-id }}
+        uses: codex-/await-remote-run@v1
+        with:
+          token: ${{ secrets.IAC_TOKEN }}
+          repo: ${{ inputs.repo_name }}
+          owner: ${{ inputs.repository_owner }}
+          run_id: ${{ steps.workflow-dispatch.outputs.run-id }}
+          run_timeout_seconds: ${{ inputs.run_timeout_seconds }}
+          poll_interval_ms: ${{ inputs.poll_interval_ms }}
